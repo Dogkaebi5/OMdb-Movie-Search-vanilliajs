@@ -2,7 +2,6 @@
   "name": "movies-spa-prac-vanilla-ts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "parcel ./index.html",
     "build": "parcel build ./index.html"
