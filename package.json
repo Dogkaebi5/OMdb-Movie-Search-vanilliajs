@@ -4,13 +4,15 @@
   "description": "",
   "scripts": {
     "dev": "parcel ./index.html",
-    "build": "parcel build ./index.html"
+    "build": "parcel build ./index.html",
+    "vercel": "vercel dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel": "^2.8.3"
+    "dotenv": "^16.0.3",
+    "parcel": "^2.8.3",
+    "vercel": "^28.15.4"
   }
-  
 }
