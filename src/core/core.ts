@@ -1,6 +1,19 @@
 // Component
+interface ComponentPayload {
+  tagName?: string
+  props?: {
+    [key: string]: unknown
+  }
+  state?: {
+    [key: string]: unknown
+  }
+}
+
 export class Component {
-  constructor(payload = {}) {
+  public el
+  public props
+  public state
+  constructor(payload:ComponentPayload = {}) {
     const { 
       tagName = 'div', //상속자 태그
       state = {}, //상속자 상태
@@ -17,7 +30,13 @@ export class Component {
 
 
 // Router
-function routeRender(routes) {
+interface Route {
+  path: string
+  component: typeof Component
+}
+type Routes = Route[]
+
+function routeRender(routes: Routes) {
   if (!location.hash) {                   //주소 해시 없을 시 자동으로 
     history.replaceState(null, '', '/#/')   //홈페이지 이동 및 히스토리(뒤로가기) 생성하지 않음
   } 
@@ -25,24 +44,30 @@ function routeRender(routes) {
   const routerView = document.querySelector('router-view')
   const [hash, queryString = ''] = location.hash.split('?') //링크 쿼리 분리
 
+  interface Query{
+    [key: string]:string
+  }
   const query = queryString
     .split('&')
     .reduce((acc, cur) => {
       const [key, value] = cur.split('=')
       acc[key] = value
       return acc
-    }, {})
+    }, {} as Query)
   history.replaceState(query, '') //(상태, 제목)
 
-  const currentRoute = routes.find(route => new RegExp(`${route.path}/?$`).test(hash))
-  routerView.innerHTML = ''
-  routerView.append(new currentRoute.component().el)
-  console.log(currentRoute)
+  const currentRoute = routes
+  .find(route => new RegExp(`${route.path}/?$`).test(hash))
+  if(routerView){
+    routerView.innerHTML = ''
+    currentRoute && routerView.append(new currentRoute.component().el)
+  }
+  // console.log(currentRoute)
 
   window.scrollTo(0, 0)
 }
 
-export function createRouter(routes) {
+export function createRouter(routes: Routes) {
   return function () {
     window.addEventListener('popstate', () => {
       routeRender(routes)
@@ -52,10 +77,17 @@ export function createRouter(routes) {
 }
 
 // Store
-export class Store {
-  constructor(state) {
-    this.state = {} 
-    this.observers = {}
+interface StoreObservers{
+  [key: string]: SubscribeCallback[]
+}
+interface SubscribeCallback{
+  (arg: unknown): void
+}
+
+export class Store<S> {
+  public state = {} as S
+  private observers = {} as StoreObservers
+  constructor(state: S) {
     for (const key in state) {//state객체, key키값, state[key]값
       // console.log(state[key])
       // console.log(this.observers)
@@ -71,7 +103,7 @@ export class Store {
     }
   }
 
-  subscribe(key, cb) {
+  subscribe(key: string, cb: SubscribeCallback) {
     Array.isArray(this.observers[key])
       ? this.observers[key].push(cb)
       : this.observers[key] = [cb]
