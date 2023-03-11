@@ -1,6 +1,6 @@
-import { Store } from '../core/core';
+import { Store } from '../core/core'
 
-export interface MovieInfo {
+export interface SimpleMovie {
   Title: string
   Year: string
   imdbID: string
@@ -23,8 +23,8 @@ interface DetailedMovie {
   Awards: string
   Poster: string
   Ratings: {
-      Source: string
-      Value: string
+    Source: string
+    Value: string
   }[]
   Metascore: string
   imdbRating: string
@@ -37,28 +37,27 @@ interface DetailedMovie {
   Website: string
   Response: string
 }
-
 interface State {
   searchText: string
   page: number
   pageMax: number
-  movies: MovieInfo[]
+  movies: SimpleMovie[]
   movie: DetailedMovie
-  loading: boolean
   message: string
+  loading: boolean
 }
-
-const store = new Store<State> ({
+const store = new Store<State>({
   searchText: '',
   page: 1,
   pageMax: 1,
   movies: [],
   movie: {} as DetailedMovie,
   loading: false,
-  message: 'Search for the movie title.'
+  message: 'Search for the movie title!'
 })
+const { APIKEY } = process.env
+ 
 export default store
-
 export const searchMovies = async (page: number) => {
   store.state.loading = true
   store.state.page = page
@@ -66,18 +65,19 @@ export const searchMovies = async (page: number) => {
     store.state.movies = []
     store.state.message = ''
   }
-
   try {
-    const res = await fetch('/api/movie', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: store.state.searchText,
-        page
-      })
-    })
-    // const json = await res.json();
-    const { Search, totalResults, Response, Error } = await res.json();
-    if (Response === "True") {
+    const res = await fetch(`https://omdbapi.com?apikey=${APIKEY}&s=${store.state.searchText}&page=${page}`)
+    // const res = await fetch('/api/movie', {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     title: store.state.searchText,
+    //     page
+    //   })
+    // })
+    console.log(res);
+
+    const { Response, Search, totalResults, Error } = await res.json()
+    if (Response === 'True') {
       store.state.movies = [
         ...store.state.movies,
         ...Search
@@ -87,23 +87,22 @@ export const searchMovies = async (page: number) => {
       store.state.message = Error
     }
   } catch (error) {
-    console.log(error)
+    console.log('searchMovies error:', error)
   } finally {
     store.state.loading = false
   }
-  // console.log(store);
 }
-
 export const getMovieDetails = async (id: string) => {
   try {
-    const res = await fetch('/api/movie', {
-      method: 'POST',
-      body: JSON.stringify({
-        id
-      })
-    })
+    const res = await fetch(`https://omdbapi.com?apikey=${APIKEY}&i=${id}&plot=full`)
+    // const res = await fetch('/api/movie', {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     id
+    //   })
+    // })
     store.state.movie = await res.json()
   } catch (error) {
-    console.log(error)
+    console.log('searchMovieDetails error:', error)
   }
 }

@@ -1,28 +1,36 @@
-import { Component } from "../core/core";
-import movieStore, { searchMovies } from "../store/movie";
+import { Component } from '../core/core'
+import movieStore, { searchMovies } from '../store/movie'
 
 export default class Search extends Component {
   render() {
-    this.el.classList.add('search');
+    this.el.classList.add('search')
     this.el.innerHTML = /* html */ `
-      <input value="${movieStore.state.searchText}"placeholder="Enter the movie title to search" />
-      <button class="btn btn-primary">Search</button>
+      <input
+          value="${movieStore.state.searchText}" 
+          placeholder="Enter the movie title to search" />
+      <button class="btn btn-primary">
+        Search
+      </button>
     `
-    // console.log(movieStore);
-    const inputEl = this.el.querySelector('input');
+
+    const inputEl = this.el.querySelector('input')
     inputEl?.addEventListener('input', () => {
-      movieStore.state.searchText = inputEl.value;
+      movieStore.state.searchText = inputEl.value
     })
-    inputEl?.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && movieStore.state.searchText.trim()) {
-        searchMovies(1)
+    inputEl?.addEventListener('keydown', async (event: Event) => {
+      if (
+        event instanceof KeyboardEvent &&
+        event.key === 'Enter' &&
+        movieStore.state.searchText.trim()
+      ) {
+        await searchMovies(1)
       }
     })
 
     const btnEl = this.el.querySelector('.btn')
-    btnEl?.addEventListener('click', () => {
+    btnEl?.addEventListener('click', async () => {
       if (movieStore.state.searchText.trim()) {
-        searchMovies(1)
+        await searchMovies(1)
       }
     })
   }
